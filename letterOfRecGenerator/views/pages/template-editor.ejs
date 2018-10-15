@@ -6,66 +6,81 @@
     <link rel="stylesheet" href="/css/template-editor.css"/>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script type="text/javascript" src="/javascripts/template-editor.js" id="<%= id %>"
-            letterheadImgData="<%= letterheadImage %>" footerImgData="<%= footerImage %>"></script>
+            letterheadImgData="<%= letterheadImage %>" footerImgData="<%= footerImage %>" saveSwitchData="<%= saveSwitch %>"></script>
+    <script src="//rubaxa.github.io/Sortable/Sortable.js"></script>
+
 </head>
 <body>
-<header>
-    <% include ../partials/header %>
-</header>
-<h1 class="title"><%= title %></h1>
+    <header>
+        <% include ../partials/header %>
+    </header>
 
-<h2 class="section-header">Template Name</h2>
-<div class="error-container">
-    <div id="name-container">
-        <input id="name-container-text-field" type="text" class="text-field" placeholder="Enter a template name here..."
-               value="<%= templateName %>"/>
+    <div id="template-editor-container">
+        <h1 class="title"><%= title %></h1>
+
+        <h2 class="section-header">Template Name</h2>
+        <div class="error-container">
+            <div id="name-container">
+                <input id="name-container-text-field" type="text" class="text-field" placeholder="Enter a template name here..."
+                       value="<%= templateName %>"/>
+            </div>
+        </div>
+
+        <h2 id="upload-letterhead" class="section-header">Upload Letterhead</h2>
+        <div class="upload-preview-container">
+            <% if(locals.letterheadImage){ %>
+            <img id="letterhead-preview" src="<%= letterheadImage %>" alt=""/>
+            <% } else{ %>
+            <img id="letterhead-preview" src="#" alt=""/>
+            <% } %>
+            <form id="letterhead-upload">
+                <input type="file" name="file" id="letterhead-upload-file"/>
+                <input type="submit" name="Submit"/>
+            </form>
+        </div>
+
+        <h2 id="upload-footer" class="section-header">Upload Footer</h2>
+        <div class="upload-preview-container">
+            <% if(locals.footerImage){ %>
+            <img id="footer-preview" src="<%= footerImage %>" alt=""/>
+            <% } else{ %>
+            <img id="footer-preview" src="#" alt=""/>
+            <% } %>
+            <form id="footer-upload">
+                <input type="file" name="file" id="footer-upload-file"/>
+                <input type="submit" name="Submit"/>
+            </form>
+        </div>
+
+        <h2 id="letter-boilerplate" class="section-header">Letter Boilerplate</h2>
+        <h4>Tags</h4>
+        <% for (var tag of tags) {  %>
+            <button id="<%= tag %>" name="tag_buttons" value ="<%= tag %>"><%= tag %></button>
+        <% } %>
+        <div class="error-container">
+            <div id="letter-container">
+                <div id="letter-text-area" contentEditable="true" id="text" onfocus="deemphasizeTags()"
+                     onblur="emphasizeTags()"></div>
+                <h3>&lt!TAG_NAME&gt in the letter will be replaced by the corresponding question's answer</h3>
+                <h3>Tags can be nested in the replacement text of other questions.</h3>
+            </div>
+        </div>
+
+        <h2 id="custom-questions" class="section-header">Custom Questions</h2>
+
+        <div id="questions-container"></div>
+
+        <%  console.log("saveSwitch: " + saveSwitch);
+            console.log(typeof saveSwitch);
+            if (saveSwitch) { %>
+            <button class="large-circle-button" onclick="addQuestion()">+</button>
+        <div class="flex-row">
+            <button id="save-button" onclick="saveTemplate()">Save</button>
+        </div>
+        <% } %>
+        
     </div>
-</div>
 
-<h2 class="section-header">Upload Letterhead</h2>
-<div class="upload-preview-container">
-    <% if(locals.letterheadImage){ %>
-    <img id="letterhead-preview" src="<%= letterheadImage %>" alt=""/>
-    <% } else{ %>
-    <img id="letterhead-preview" src="#" alt=""/>
-    <% } %>
-    <form id="letterhead-upload">
-        <input type="file" name="file" id="letterhead-upload-file"/>
-        <input type="submit" name="Submit"/>
-    </form>
-</div>
-
-<h2 class="section-header">Upload Footer</h2>
-<div class="upload-preview-container">
-    <% if(locals.footerImage){ %>
-    <img id="footer-preview" src="<%= footerImage %>" alt=""/>
-    <% } else{ %>
-    <img id="footer-preview" src="#" alt=""/>
-    <% } %>
-    <form id="footer-upload">
-        <input type="file" name="file" id="footer-upload-file"/>
-        <input type="submit" name="Submit"/>
-    </form>
-</div>
-
-<h2 class="section-header">Letter Boilerplate</h2>
-<div class="error-container">
-    <div id="letter-container">
-        <div id="letter-text-area" contentEditable="true" id="text" onfocus="deemphasizeTags()"
-             onblur="emphasizeTags()"></div>
-        <h3>&lt!TAG_NAME&gt in the letter will be replaced by the corresponding question's answer</h3>
-        <h3>Tags can be nested in the replacement text of other questions.</h3>
-    </div>
-</div>
-
-<h2 class="section-header">Custom Questions</h2>
-
-<div id="questions-container"></div>
-
-<button class="large-circle-button" onclick="addQuestion()">+</button>
-<div class="flex-row">
-    <button id="save-button" onclick="saveTemplate()">Save</button>
-</div>
 </body>
 
 <div id="add-question-modal">
@@ -73,16 +88,20 @@
         <div class="flex-row">
             <h1>Select Question Type</h1>
         </div>
-        <div class="flex-row">
+        <div class="flex-row option-cont">
             <button onclick="addTextAnswerQuestion()">Text Answer</button>
         </div>
         <div class="line"></div>
-        <div class="flex-row">
+        <div class="flex-row option-cont">
             <button onclick="addRadioButtonQuestion()">Radio Button</button>
         </div>
         <div class="line"></div>
-        <div class="flex-row">
+        <div class="flex-row option-cont">
             <button onclick="addCheckboxQuestion()">Checkbox</button>
+        </div>
+        <div class="line"></div>
+        <div class="flex-row option-cont">
+            <button onclick="addCustomQuestion()">Custom</button>
         </div>
     </div>
 </div>
@@ -99,3 +118,12 @@
     </div>
 </div>
 </html>
+
+<script>
+    $("button[name='tag_buttons']").on("click", function(e) {
+        var val = $(this).val();
+        var theDiv = document.getElementById("letter-text-area");
+        var content = document.createTextNode(" "+ val);
+        theDiv.appendChild(content);
+    }); 
+</script>
