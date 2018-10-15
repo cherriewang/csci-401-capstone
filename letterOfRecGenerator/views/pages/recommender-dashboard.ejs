@@ -36,6 +36,7 @@
     <thead>
     <tr>
         <td>Name</td>
+        <td>Organization</td>
         <td>Template</td>
         <td class="center">Status</td>
         <td class="icons"></td>
@@ -45,8 +46,10 @@
     <% for (var form of forms) { %>
     <tr>
         <td><%= form.email %></td>
+        <td><%= form.organization %></td>
         <td><%= form.template.name %></td>
         <td class="center">
+
             <% if (form.status == 'Sent') { %>
             <img class="icon" src="/images/red_x.png"/>
             <% } else { %>
@@ -54,9 +57,19 @@
             <% } %>
         </td>
         <td class="center">
-            <img class="icon clickable" src="/images/preview.png" onclick="openLetterPreview(<%= JSON.stringify({
-                id: form._id
+            <img class="icon" src="/images/history.png" onclick="openHistory(<%= JSON.stringify({
+                id: form._id, email: form.email
+            }) %>)"/>
+            <% if (form.email_sent == false) { %>
+            <img class="icon" src="/images/email_incomplete.png" onclick="openLetterPreview(<%= JSON.stringify({
+                id: form._id, email: form.email
             }) %>, '<%= form.status %>')"/>
+            <% } else { %>
+            <img class="icon" src="/images/email_complete.png" onclick="openLetterPreview(<%= JSON.stringify({
+                id: form._id, email: form.email
+            }) %>, '<%= form.status %>')"/>
+            <% } %>
+            <img class="icon clickable" src="/images/preview.png"/>
             <img class="icon clickable" src="/images/delete.png" onclick="deleteRow('<%= form._id %>')"/>
         </td>
     </tr>
@@ -100,6 +113,11 @@
                 console.log('error');
             }
         });
+    }
+
+    function openHistory(params) {
+        // Check to see if the status is green, if not then show error dialog
+        window.location.href = getDestinationRoute('http://localhost:3000/history', params);
     }
 
     // When the user clicks the preview icon, take them to the letter preview page.
