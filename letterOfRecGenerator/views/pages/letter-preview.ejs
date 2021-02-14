@@ -1,106 +1,119 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title><%= title %></title>
-    <link rel="stylesheet" href="/stylesheets/style.css"/>
-    <link rel="stylesheet" type="text/css" href="/css/letter-preview.css"/>
-    <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css">
-    <script type="text/javascript" src="/javascripts/letter-preview.js" id="'<%= id %>'"></script>
-    <script type="text/javascript" src="/javascripts/html2pdf.bundle.min.js" id="'<%= id %>'"></script>
+    <head>
+        <title><%= title %></title>
+        <link rel="stylesheet" href="/stylesheets/style.css"/>
+        <link rel="stylesheet" type="text/css" href="/css/letter-preview.css"/>
+        <link rel="stylesheet" type="text/css" href="/css/modal.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.11.1/trix.css">
+        <link rel="stylesheet" type="text/css" href="/css/all.css"/>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="/javascripts/letter-preview.js" id="'<%= id %>'"></script>
+        <script type="text/javascript" src="/javascripts/html2pdf.bundle.min.js" id="'<%= id %>'"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/trix/0.11.1/trix.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
+    </head>
+    <body onload="onLoad()">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.11.1/trix.css">
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.css"> -->
-    <script src="http://manova.surge.sh/javascript/jquery.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/trix/0.11.1/trix.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic.min.js"></script>
-</head>
-<body onload="onLoad()">
-<header>
-    <% include ../partials/header %>
-</header>
-<h1 class="title"><%= title %></h1>
-<div id="outer-container">
 
-</div>
+    <div class="background">
+        <header>
+            <% include ../partials/header %>
+        </header> 
+        <p id="letter-preview-heading" class="title">Preview Letter </p>
+        <p id="" class="letter-preview-subheading">Send an email to <%= title %></p>
+        <p id="edit-heading" class="letter-preview-subheading">Click to edit </p>
 
-</body>
 
-<div id="add-question-modal">
-    <div class="inside">
+        <div style="display: none;" id="formId" value="<%= id %>"><%= id %></div>
+        <div style="display: none;" id="form" value="<%= form %>"><%= form %></div>
 
-        <form class="ui form example">
-            <div class="ui message error"></div>
 
-            <input id="content" value="" type="hidden" name="content">
-            <trix-editor input="content"></trix-editor>
-
-        </form>
-
-        <div class="flex-row">
-            <button class="convert-pdf" onclick="saveEditModal()">Save</button>
-            <button class="convert-pdf" onclick="cancelEditModal()">Cancel</button>
+        <!-- Letter Preview Container -->
+        <div id="outer-container">
+            
         </div>
 
+        <!-- Save and Cancel Letter Preview Edit -->
+        <div id="add-question-modal">
+            <div id="letter-preview-modal" class="inside">
+
+                <form class="ui form example">
+                    <p class="modal-title"> Edit Letter </p>
+                    <div class="ui message error"></div>
+
+                    <div id="content" value="" type="hidden" name="content"></div>
+                    <trix-editor input="content"></trix-editor>
+
+                </form>
+
+                <div class="flex-row">
+                    <button id="save-btn" class="convert-pdf modal-btns" onclick="saveEditModal()">Save</button>
+                    <button id="cancel-btn" class="convert-pdf modal-btns" onclick="cancelEditModal()">Cancel</button>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- Add date to letter -->
+        <div id="date-picker">
+            <p id="add-date-heading" class="section-header">Add Date: </p>
+            <input type="date" name="date" id="date">
+        </div>
+            
+        <!-- Adding the save to pdf file -->
+        <button class="download-button" id="downloadButton" onClick="downloadLetter()"> Download Letter</button>
     </div>
-</div>
-<button class="convert-pdf" id = "convertPDF">Convert to PDF</button>
-<script type = 'text/javascript'>
-    function imageToDataUri(img, width, height) {
-        var canvas = document.createElement('canvas'),
-            ctx = canvas.getContext('2d');
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        return canvas.toDataURL();
-    }
+    </body>
 
-    $('#convertPDF').click(function() {
-        var element = document.getElementById('print');
-        html2pdf(element, {
-          margin:       1,
-          filename:     'letterOfRec.pdf',
-          image:        { type: 'png', quality: 0.98 },
-          html2canvas:  { dpi: 300, letterRendering: true },
-          jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-        });
-        var letterheadImg = imageToDataUri(document.getElementById('letterhead-img'),
-            $('#letterhead-img').width(),
-            $('#letterhead-img').height());
-        var footerImg = imageToDataUri(document.getElementById('footer-img'),
-            $('#footer-img').width(),
-            $('#footer-img').height());
-        console.log(form.template);
-        form.template.letterheadImg = letterheadImg;
-        form.template.footerImg = footerImg;
-        console.log(form.template);
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    window.onload = function() {
+        onLoad();
+        document.getElementById("email-subject-text-area").value = $("#email-templates").find(':selected').data('subject');
+        var body = $("#email-templates").find(':selected').data('body');
+        parseEmailLetter(body);
+    };
 
-
-        $.ajax({
-            url: 'http://localhost:3000/template-editor/update',
-            data: {
-                id: form.template._id,
-                template: form.template
-            },
-            type: 'POST',
-            success: function (data) {
-                console.log('form saved');
-                $.ajax({
-                    url: 'http://localhost:3000/template-editor/template',
-                    data: {id: form.template._id},
-                    type: 'GET',
-                    success: function (dat) {
-                        console.log(dat);
-                    }
-                });
-            },
-            error: function () {
-                console.log('error');
-            }
-        });
+    $("#email-templates").change(function () {
+        document.getElementById("email-subject-text-area").value = $(this).find(':selected').data('subject');
+        var body =  $(this).find(':selected').data('body');
+        parseEmailLetter(body);
 
     });
 
+    function sendEmail() {
+        var id = document.getElementById("formId").innerHTML;
+        
+        var Email = {
+            title: document.getElementById("email-templates").value,
+            subject: document.getElementById("email-subject-text-area").value,
+            body_text: document.getElementById("email-body-text-area").value
+        };
 
+        $.ajax({
+            url: 'http://localhost:3000/letter-preview',
+            data: {
+                id: id,
+                Email: Email
+            },
+            type: 'POST',
+            complete: function() {
+                console.log('worked');
+                window.location.href = 'http://localhost:3000/recommender-dashboard';
+            },
+            error: function () {
+                console.log('error')
+            }
+        })
+            
+    }
+
+    function getDestinationRoute(address, params) {
+        return address + '?' + $.param(params);
+    }
 </script>
 </html>

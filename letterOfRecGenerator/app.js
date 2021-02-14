@@ -10,8 +10,11 @@ var querystring = require('querystring');
 var url = require('url');
 var OAuth2 = google.auth.OAuth2;
 var passport = require('./config/passport');
+var fileUpload = require('express-fileupload');
+var mammoth = require('mammoth');
 
 var createTemplate = require('./routes/template-editor');
+var createEmailTemplate = require('./routes/email-template-editor');
 var formCompleted = require('./routes/form-completed');
 var formEntry = require('./routes/form-entry');
 var index = require('./routes/login');
@@ -20,6 +23,10 @@ var login = require('./routes/login');
 var recommenderDashboard = require('./routes/recommender-dashboard');
 var templateDashboard = require('./routes/template-dashboard');
 var users = require('./routes/users');
+var history = require('./routes/history');
+var archive = require('./routes/archive');
+var response = require('./routes/response');
+var emailLetterPreview = require('./routes/email-letter-preview');
 
 var app = express();
 
@@ -39,6 +46,7 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(fileUpload());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -48,7 +56,7 @@ app.set('view engine', 'ejs');
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'https://www.googleapis.com/auth/gmail.send'],
+    scope: ['profile', 'https://www.googleapis.com/auth/gmail.send', 'https://www.googleapis.com/auth/drive'],
     prompt: 'select_account'
 }));
 
@@ -64,13 +72,19 @@ app.use('/logout', (req, res) => {
 
 app.use('/', index);
 app.use('/template-editor', isAuthenticated, createTemplate);
+app.use('/email-template-editor',isAuthenticated, createEmailTemplate);
 app.use('/form-completed', formCompleted);
 app.use('/form-entry', formEntry);
 app.use('/letter-preview', letterPreview);
+app.use('/email-letter-preview', emailLetterPreview);
 app.use('/login', login);
 app.use('/recommender-dashboard', isAuthenticated, recommenderDashboard);
 app.use('/template-dashboard', isAuthenticated, templateDashboard);
 app.use('/users', isAuthenticated, users);
+app.use('/history', history);
+app.use('/archive', archive);
+app.use('/response', response);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
